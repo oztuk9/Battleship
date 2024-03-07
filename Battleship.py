@@ -1,6 +1,7 @@
 import keyboard
 import re
 import os
+import random
 
 #Constant
 
@@ -13,24 +14,25 @@ MIDDLE_LINES =       "╠═══╬═══╬═══╬═══╬══�
 LOW_FRAME =          "╚═══╩═══╩═══╩═══╩═══╩═══╩═══╩═══╩═══╩═══╩═══╝"
 PLAYER1_BATTLESHIP_TABLE = []
 PLAYER2_BATTLESHIP_TABLE = []
-SHIPS_POSITION1 = {}
+SHIPS_PLAYER = {}
+SHIPS_COMPUTER = {}
 VALID_NUMBERS = ['1','2','3','4','5','6','7','8','9','10']
 VALID_LETTERS = ['A','B','C','D','E','F','G','H','I','J']
 SHIPS_NAMES_HOLES = ['Destroyer (2 holes)','Submarine (3 holes)','Cruiser (3 holes)','Battleship (4 holes)','Carrier (5 holes)']
 
 #Class
 
-#This class creates and prints game tables
-class Tables:
+#This class creates and prints game boards
+class Boards:
 
-#This method fills the list of player tables in the game
-    def createTables(self):
+#This method fills the list of player boards in the game
+    def createBoards(self):
         for lista in range(0,10):
             PLAYER1_BATTLESHIP_TABLE.append([str(lista+1),' ',' ',' ',' ',' ',' ',' ',' ',' ',' '])
             PLAYER2_BATTLESHIP_TABLE.append([str(lista+1),' ',' ',' ',' ',' ',' ',' ',' ',' ',' '])
 
-#This method prints the game tables of the player
-    def printTables(self,tablero1, tablero2):
+#This method prints the game boards of the player
+    def printBoards(self,tablero1, tablero2):
         print(f"{UPPER_FRAME}     {UPPER_FRAME}")
         print(f"{TITLE_TABLE1}     {TITLE_TABLE2}")
         print(f"{MIDDLE_LINES_TITLE}     {MIDDLE_LINES_TITLE}")
@@ -68,54 +70,22 @@ class Tables:
 class AddShips:
 
 #This method requests the position of ships
-    def giveMePositionOfShips(self):
-        for ship in SHIPS_NAMES_HOLES:
-            self.getCoordinate(ship)
-            clearConsole()
-            tables.printTables(PLAYER1_BATTLESHIP_TABLE,PLAYER2_BATTLESHIP_TABLE)
-        for clave, valor in SHIPS_POSITION1.items():
-            print(clave, valor)
-
-#This method verifies if the coordinate has the correct characters 
-    def getCoordinate(self,ship):
-        caracterLetra = False
-        caracterNumero = False
-        message = None
-        coordinate = input(f"Give me the position of ship {ship}")
-        #Her verifies if the coordinate sizes is 2 or 3, later verifies if tis have correct characters
-        if(len(coordinate)==2):
-            for caracter in coordinate:
-                if caracter.upper() in VALID_LETTERS and caracterLetra == False:
-                    caracterLetra = True
-                elif(caracter in VALID_NUMBERS and caracterNumero == False):
-                    caracterNumero = True
-            if(caracterNumero and caracterLetra == True):
-                self.validationCoordinate(coordinate, ship)
-            else:
-                print('La coordenada no es correcta, intentelo de nuevo')
-                self.getCoordinate(ship)
-        elif(len(coordinate)==3):
-            if len(re.findall(r'\d+', coordinate)) == 1:
-                for index, caracter in enumerate(coordinate):
-                    if caracter.upper() in VALID_LETTERS and caracterLetra == False:
-                        caracterLetra = True
-                    elif(caracter in VALID_NUMBERS and caracterNumero == False):
-                        caracterNumero = True
-                        if(caracter == '1'):
-                            if(coordinate[index+1] !='0'):
-                                caracterNumero = False
-                        
-                if(caracterNumero and caracterLetra == True):
-                    self.validationCoordinate(coordinate, ship)
-                else:
-                    print('La coordenada no es correcta, intentelo de nuevo')
-                    self.getCoordinate(ship)
-            else:
-                print('La coordenada no es correcta, intentelo de nuevo')
-                self.getCoordinate(ship)
+    def giveMePositionOfShips(self,player):
+        if player ==True:
+            for ship in SHIPS_NAMES_HOLES:
+                playerPerson.getCoordinate(ship)
+                clearConsole()
+                boards.printBoards(PLAYER1_BATTLESHIP_TABLE,PLAYER2_BATTLESHIP_TABLE)
+            for clave, valor in SHIPS_PLAYER.items():
+                print(clave, valor)
+            self.giveMePositionOfShips(False)
         else:
-            print('La coordenada no es correcta, intentelo de nuevo')
-            self.getCoordinate(ship)
+            for ship in SHIPS_NAMES_HOLES:
+                computerPlayer.randomPosition(ship)
+                clearConsole()
+                boards.printBoards(PLAYER1_BATTLESHIP_TABLE,PLAYER2_BATTLESHIP_TABLE)
+            for clave, valor in SHIPS_COMPUTER.items():
+                print(clave, valor)
 
 #This method translates the player input coordinate
     def translateCoordinate(self, coordinate):
@@ -128,24 +98,26 @@ class AddShips:
         return result
 
 #This method takes the expansion direction of the ships
-    def directionShip(self,ship):
+    def directionShip(self, player, ship):
         tecla_pulsada = None
         print(f'En que direccion se extiende el barco {ship}?')
         print('W(Arriba), S(Abajo), D(Derecha), A(Izquierda)')
 
-        while True:
-            evento = keyboard.read_event(suppress=True)
-            tecla_pulsada = evento.name.upper()
-            print(f"Presionaste la tecla: {tecla_pulsada}")
-            if tecla_pulsada == 'W':
-                break
-            if tecla_pulsada == 'S':
-                break
-            if tecla_pulsada == 'A':
-                break
-            if tecla_pulsada == 'D':
-                break
-
+        if player == True:
+            while True:
+                evento = keyboard.read_event(suppress=True)
+                tecla_pulsada = evento.name.upper()
+                print(f"Presionaste la tecla: {tecla_pulsada}")
+                if tecla_pulsada == 'W':
+                    break
+                if tecla_pulsada == 'S':
+                    break
+                if tecla_pulsada == 'A':
+                    break
+                if tecla_pulsada == 'D':
+                    break
+        else:
+            tecla_pulsada = random.choice("WSAD")
         return tecla_pulsada
 
 #This method checks if it´s possibles to create a ship at this position, provided it´s whithin the game board 
@@ -177,7 +149,7 @@ class AddShips:
         return directionPosible
 
 #This method checks if exist there is a ship in any direction where you want to place your ship
-    def emptySpace(self, holeNumbers, positionX, positionY, availablePosible):
+    def emptySpace(self,availablePosible, holeNumbers,player, positionX, positionY):
         initialPositionX = None
         initialPositionY = None
         isPosibleCreateShipInX = True
@@ -191,23 +163,39 @@ class AddShips:
         if(up==True):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionY-1)-index
-                if(PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o'):
-                    up=False
+                if player == True:
+                    if(PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o'):
+                        up=False
+                else:
+                    if(PLAYER2_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o'):
+                        up=False
         if(down==True):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionY-1)+index
-                if(PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o'):
-                    down=False
+                if player == True:
+                    if(PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o'):
+                        down=False
+                else:
+                    if(PLAYER2_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o'):
+                        down=False
         if(right==True):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionX)+index
-                if(PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o'):
-                    right=False
+                if player == True:
+                    if(PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o'):
+                        right=False
+                else:
+                    if(PLAYER2_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o'):
+                        right=False
         if(left==True):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionX)-index
-                if (PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o'):
-                    left=False
+                if player == True:
+                    if(PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o'):
+                        left=False
+                else:
+                    if(PLAYER2_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o'):
+                        left=False
 
         return up or down or right or left
 
@@ -230,78 +218,170 @@ class AddShips:
             return True
 
 #This method verifies if there are ships in the position where a ship is to be placed
-    def shipExist(self,direction, holeNumbers, positionX, positionY):
+    def shipExist(self,direction, holeNumbers, player, positionX, positionY):
         exist = False
         if(direction == 'W'):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionY-1)-index
-                if PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o':
-                    exist=True
+                if player == True:
+                    if PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o':
+                        exist = True
+                else:
+                    if PLAYER2_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o':
+                        exist = True
         elif(direction =='S'):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionY-1)+index
-                if PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o':
-                    exist=True
+                if player == True:
+                    if PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o':
+                        exist = True
+                else:
+                    if PLAYER2_BATTLESHIP_TABLE[piceOfShip][positionX] == 'o':
+                        exist = True
         elif(direction =='D'):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionX)+index
-                if PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o':
-                    exist=True
+                if player == True:
+                    if PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o':
+                        exist = True
+                else:
+                    if PLAYER2_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o':
+                        exist = True
         elif(direction =='A'):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionX)-index
-                if PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o':
-                    exist = True
+                if player == True:
+                    if PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o':
+                        exist = True
+                else:
+                    if PLAYER2_BATTLESHIP_TABLE[positionY-1][piceOfShip] == 'o':
+                        exist = True
+
         if exist == True:
-            print("Ya existe un barco en esa posición")
             return False
         else:
             return True
 
 #This method verifies if is posible to create a ship in this position and direction, in order to then create the ship
-    def validationCoordinate(self,coordinate, ship):
+    def validationCoordinate(self,coordinate,player, ship):
         translateCoordinate = self.translateCoordinate(coordinate)
         positionX = translateCoordinate[0]
         positionY = translateCoordinate[1]
         holeNumbers = int(re.findall(r'\d+',ship)[0])
         availablePosible = self.availablePosible(holeNumbers, positionX, positionY)
-        posibleCreate = self.emptySpace(holeNumbers, positionX, positionY, availablePosible)
+        posibleCreate = self.emptySpace(availablePosible, holeNumbers, player, positionX, positionY)
         if posibleCreate == True:
-            direction = self.directionShip(ship)
+            direction = self.directionShip(player, ship)
             inLimits = self.analyzShipPos(direction,holeNumbers, positionX, positionY)
             if inLimits == True:
-                shipExist = self.shipExist(direction, holeNumbers, positionX, positionY)
+                shipExist = self.shipExist(direction, holeNumbers, player, positionX, positionY)
                 if shipExist == True:
-                    self.createShip(holeNumbers,direction,positionX,positionY,coordinate,ship)
+                    self.createShip(coordinate, direction, holeNumbers, player, positionX, positionY, ship)
                 else:
                     print('Ya existe un barco en esa posición')
-                    self.validationCoordinate(coordinate, ship)
+                    self.validationCoordinate(coordinate, player, ship)
             else:
                 print('No se puede colocar un barco en esa direccion')
-                self.validationCoordinate(coordinate, ship)
+                self.validationCoordinate(coordinate, player, ship)
         else:
             print('No es posible colocar un barco en esa posición')
-            self.getCoordinate(ship)
+            if player == True:
+                self.getCoordinate(ship)
+            else:
+                computerPlayer.randomPosition(ship)
 
 #This method creates a ship on the game tables for players
-    def createShip(self,holeNumbers,direction,positionX,positionY,coordinate,ship):
+    def createShip(self,coordinate, direction, holeNumbers, player, positionX, positionY, ship):
+        shipCoordinates = []
         if(direction=='W'):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionY-1)-index
-                PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] = 'o'
+                shipCoordinates.append([positionX, piceOfShip])
+                if player == True:
+                    PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] = 'o'
+                else:
+                    PLAYER2_BATTLESHIP_TABLE[piceOfShip][positionX] = 'o'
         elif(direction=='S'):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionY-1)+index
-                PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] = 'o'
+                shipCoordinates.append([positionX, piceOfShip])
+                if player == True:
+                    PLAYER1_BATTLESHIP_TABLE[piceOfShip][positionX] = 'o'
+                else:
+                    PLAYER2_BATTLESHIP_TABLE[piceOfShip][positionX] = 'o'
         elif(direction=='D'):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionX)+index
-                PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] = 'o'
+                shipCoordinates.append([piceOfShip,positionY-1])
+                if player == True:
+                    PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] = 'o'
+                else:
+                    PLAYER2_BATTLESHIP_TABLE[positionY-1][piceOfShip] = 'o'
         elif(direction=='A'):
             for index in range(0,int(holeNumbers)):
                 piceOfShip = (positionX)-index
-                PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] = 'o'
-        SHIPS_POSITION1[ship.split()[0]] = [direction,coordinate]
+                shipCoordinates.append([piceOfShip,positionY-1])
+                if player == True:
+                    PLAYER1_BATTLESHIP_TABLE[positionY-1][piceOfShip] = 'o'
+                else:
+                    PLAYER2_BATTLESHIP_TABLE[positionY-1][piceOfShip] = 'o'
+        if player == True:
+            SHIPS_PLAYER[ship.split()[0]] = [True, shipCoordinates]
+        else:
+            SHIPS_COMPUTER[ship.split()[0]] = [True, shipCoordinates]
+
+class PlayerPerson:
+
+#This method takes and verifies if the coordinate set by the player has the correct characters 
+    def getCoordinate(self,ship):
+        caracterLetra = False
+        caracterNumero = False
+        message = None
+        coordinate = input(f"Give me the position of ship {ship}")
+        #Her verifies if the coordinate sizes is 2 or 3, later verifies if tis have correct characters
+        if(len(coordinate)==2):
+            for caracter in coordinate:
+                if caracter.upper() in VALID_LETTERS and caracterLetra == False:
+                    caracterLetra = True
+                elif(caracter in VALID_NUMBERS and caracterNumero == False):
+                    caracterNumero = True
+            if(caracterNumero and caracterLetra == True):
+                ships.validationCoordinate(coordinate,True, ship)
+            else:
+                print('La coordenada no es correcta, intentelo de nuevo')
+                self.getCoordinate(ship)
+        elif(len(coordinate)==3):
+            if len(re.findall(r'\d+', coordinate)) == 1:
+                for index, caracter in enumerate(coordinate):
+                    if caracter.upper() in VALID_LETTERS and caracterLetra == False:
+                        caracterLetra = True
+                    elif(caracter in VALID_NUMBERS and caracterNumero == False):
+                        caracterNumero = True
+                        if(caracter == '1'):
+                            if(coordinate[index+1] !='0'):
+                                caracterNumero = False
+                        
+                if(caracterNumero and caracterLetra == True):
+                    ships.validationCoordinate(coordinate,True, ship)
+                else:
+                    print('La coordenada no es correcta, intentelo de nuevo')
+                    self.getCoordinate(ship)
+            else:
+                print('La coordenada no es correcta, intentelo de nuevo')
+                self.getCoordinate(ship)
+        else:
+            print('La coordenada no es correcta, intentelo de nuevo')
+            self.getCoordinate(ship)
+
+class ComputerPlayer:
+#This method generates a random coordinate for the computer player
+    def randomPosition(self, ship):
+        latter = VALID_LETTERS[random.randint(0,9)]
+        number = random.randint(1,10)
+        coordinate = f"{latter}{number}"
+        print(f'Coordenada random: {coordinate}')
+        ships.validationCoordinate(coordinate,False, ship)
+
 
 # Función para limpiar la consola
 def clearConsole():
@@ -312,9 +392,12 @@ def clearConsole():
         _ = os.system('cls')
 
 if __name__ == "__main__":
-    tables = Tables()
-    tables.createTables()
-    tables.printTables(PLAYER1_BATTLESHIP_TABLE, PLAYER2_BATTLESHIP_TABLE)
-    
+    computerPlayer = ComputerPlayer()
+    playerPerson = PlayerPerson()
+    boards = Boards()
     ships = AddShips()
-    ships.giveMePositionOfShips()
+
+    boards.createBoards()
+    boards.printBoards(PLAYER1_BATTLESHIP_TABLE, PLAYER2_BATTLESHIP_TABLE)
+    
+    ships.giveMePositionOfShips(True)
