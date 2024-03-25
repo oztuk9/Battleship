@@ -1,8 +1,9 @@
 import keyboard
-import re
 import os
 import random
+import re
 import sys
+import pygame
 
 #Constant
 
@@ -84,12 +85,9 @@ class Ships:
         else:
             for ship in SHIPS_NAMES_HOLES:
                 computerPlayer.randomPosition(ship)
+            play_audio(convertMusic('battle-time'))
             clearConsole()
-            boards.printBoards(PLAYER1_BATTLESHIP_TABLE,PLAYER2_BATTLESHIP_TABLE)
-            for clave, valor in SHIPS_PLAYER.items():
-                print(clave, valor)
-            for clave, valor in SHIPS_COMPUTER.items():
-                print(clave, valor)
+            boards.printBoards(PLAYER1_BATTLESHIP_TABLE,PLAYER2_BATTLESHIP_TABLE)  
             playerPerson.correctCoordinateShoot()
 
     def createShip(self,coordinate, direction, holeNumbers, player, positionX, positionY, ship):
@@ -144,9 +142,9 @@ class Ships:
             simbolBoard = PLAYER1_BATTLESHIP_TABLE[positionY][positionX]
 
         if  simbolBoard== 'x' or simbolBoard == 'ø':
-            messages.append("Seems like we've already shot at that coordinate")
-            printMessage()
             if player == True:
+                messages.append("Seems like we've already shot at that coordinate")
+                printMessage()
                 playerPerson.correctCoordinateShoot()
             else:
                 computerPlayer.randomShot()
@@ -195,14 +193,14 @@ class Ships:
         else:
             for ship, valor in SHIPS_PLAYER.items():
                 for coordinateShip in valor[1]:
-                    for coordinateShip in valor[1]:
-                        if coordinateShip[0] == positionX and coordinateShip[1] == positionY:
-                            valor[0] -= 1
+                    if coordinateShip[0] == positionX and coordinateShip[1] == positionY:
+                        valor[0] -= 1
                         if valor[0] ==0:
                             messages.append(f'Captain! The enemy destroyed our "{ship}"')
                             LIVES_PLAYER -= 1
                         else:
                             messages.append('Captain! One of our ships has been hit')
+            printMessage()
             if LIVES_PLAYER == 0:
                 gameOver(player)
 
@@ -467,8 +465,21 @@ class ComputerPlayer:
         latter = VALID_LETTERS[random.randint(0,9)]
         number = random.randint(1,10)
         coordinate = f"{latter}{number}"
-        print(f'The enemy has shot at coordinate: "{coordinate}"')
         ships.shotShip(False,coordinate)
+
+def convertMusic(soundName):
+    mainDir = os.path.dirname(__file__)
+    rute = os.path.abspath(os.path.join(mainDir, "SoundLibrary", soundName + ".mp3"))
+    print(rute)
+    return rute
+
+def play_audio(file_path):
+    pygame.mixer.init()
+    pygame.mixer.music.load(file_path)
+    pygame.mixer.music.play(loops=-1)
+
+def stop_audio():
+    pygame.mixer.music.stop()
 # Función para limpiar la consola
 def clearConsole():
     # Verificamos el sistema operativo
@@ -487,8 +498,10 @@ def printMessage():
 def gameOver(player):
     messages.append('Game Over')
     if player == True:
+        play_audio(convertMusic('victory-game'))
         messages.append('You win')
     else:
+        play_audio(convertMusic('game-over'))
         messages.append('You lose')
     reset()
 
@@ -518,10 +531,11 @@ def main():
     SHIPS_COMPUTER = {}
     LIVES_PLAYER = 5
     LIVES_COMPUTER = 5
+    play_audio(convertMusic('start-game'))
+    clearConsole()
     boards.createBoards()
     boards.printBoards(PLAYER1_BATTLESHIP_TABLE, PLAYER2_BATTLESHIP_TABLE)
-    
-    ships.giveMePositionOfShips(False)
+    ships.giveMePositionOfShips(True)
 
 if __name__ == "__main__":
     boards = Boards()
