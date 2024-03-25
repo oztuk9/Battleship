@@ -3,6 +3,7 @@ import os
 import random
 import re
 import sys
+import time
 import pygame
 
 #Constant
@@ -85,7 +86,7 @@ class Ships:
         else:
             for ship in SHIPS_NAMES_HOLES:
                 computerPlayer.randomPosition(ship)
-            play_audio(convertMusic('battle-time'))
+            playMusic(setRuteAudio('battle-time', 'Music'))
             clearConsole()
             boards.printBoards(PLAYER1_BATTLESHIP_TABLE,PLAYER2_BATTLESHIP_TABLE)  
             playerPerson.correctCoordinateShoot()
@@ -184,10 +185,16 @@ class Ships:
                     if coordinateShip[0] == positionX and coordinateShip[1] == positionY:
                         valor[0] -= 1
                         if valor[0] == 0:
+                            playSound(setRuteAudio('ship-destroyed', 'Sounds'))
                             messages.append(f'Captain! We destroyed the {ship}')
                             LIVES_COMPUTER -= 1
+                            printMessage()
+                            time.sleep(2)
                         else:
+                            playSound(setRuteAudio('ship-hit', 'Sounds'))
                             messages.append('Captain! We hit a ship')
+                            printMessage()
+                            time.sleep(1)
             if LIVES_COMPUTER == 0:
                 gameOver(player)
         else:
@@ -196,11 +203,16 @@ class Ships:
                     if coordinateShip[0] == positionX and coordinateShip[1] == positionY:
                         valor[0] -= 1
                         if valor[0] ==0:
+                            playSound(setRuteAudio('ship-destroyed', 'Sounds'))
                             messages.append(f'Captain! The enemy destroyed our "{ship}"')
                             LIVES_PLAYER -= 1
+                            printMessage()
+                            time.sleep(2)
                         else:
+                            playSound(setRuteAudio('ship-hit', 'Sounds'))
                             messages.append('Captain! One of our ships has been hit')
-            printMessage()
+                            printMessage()
+                            time.sleep(1)
             if LIVES_PLAYER == 0:
                 gameOver(player)
 
@@ -467,19 +479,22 @@ class ComputerPlayer:
         coordinate = f"{latter}{number}"
         ships.shotShip(False,coordinate)
 
-def convertMusic(soundName):
+def setRuteAudio(soundName, folderSound):
     mainDir = os.path.dirname(__file__)
-    rute = os.path.abspath(os.path.join(mainDir, "SoundLibrary", soundName + ".mp3"))
+    rute = os.path.abspath(os.path.join(mainDir, "SoundLibrary", folderSound , soundName + ".mp3"))
     print(rute)
     return rute
 
-def play_audio(file_path):
+def playMusic(filePath):
     pygame.mixer.init()
-    pygame.mixer.music.load(file_path)
+    pygame.mixer.music.load(filePath)
+    pygame.mixer.music.set_volume(0.3)
     pygame.mixer.music.play(loops=-1)
 
-def stop_audio():
-    pygame.mixer.music.stop()
+def playSound(filePath):
+    sound = pygame.mixer.Sound(filePath)
+    sound.set_volume(1.0)
+    sound.play()
 # Función para limpiar la consola
 def clearConsole():
     # Verificamos el sistema operativo
@@ -498,10 +513,10 @@ def printMessage():
 def gameOver(player):
     messages.append('Game Over')
     if player == True:
-        play_audio(convertMusic('victory-game'))
+        playMusic(setRuteAudio('victory-game', 'Music'))
         messages.append('You win')
     else:
-        play_audio(convertMusic('game-over'))
+        playMusic(setRuteAudio('game-over', 'Music'))
         messages.append('You lose')
     reset()
 
@@ -531,7 +546,7 @@ def main():
     SHIPS_COMPUTER = {}
     LIVES_PLAYER = 5
     LIVES_COMPUTER = 5
-    play_audio(convertMusic('start-game'))
+    playMusic(setRuteAudio('start-game','Music'))
     clearConsole()
     boards.createBoards()
     boards.printBoards(PLAYER1_BATTLESHIP_TABLE, PLAYER2_BATTLESHIP_TABLE)
